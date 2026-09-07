@@ -29,7 +29,7 @@ Plan: `plan.md` · Spec: `../SPEC.md`
   - Files: `src/todolist/task_row.py`, `src/todolist/window.py`
   - Dependencies: Task 2
 
-- [ ] Task 4: Due dates + urgency coloring
+- [x] Task 4: Due dates + urgency coloring
   - Acceptance: add/edit forms accept optional due date; `urgency_color(due_date)` correct for overdue, due-today, 1-3 days, 4+ days, no-date; task rows styled per tier
   - Verify: `pytest tests/test_urgency.py` covering all five cases; manual check that the three color tiers are visually distinguishable
   - Files: `src/todolist/urgency.py`, `tests/test_urgency.py`, `src/todolist/task_row.py`, `src/todolist/window.py`

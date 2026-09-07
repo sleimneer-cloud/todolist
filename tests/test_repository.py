@@ -52,6 +52,20 @@ def test_update_due_date(repo):
     assert updated.due_date == due
 
 
+def test_update_can_clear_due_date(repo):
+    task = repo.add("plan trip", due_date=date.today())
+    updated = repo.update(task.id, due_date=None)
+    assert updated.due_date is None
+    assert repo.list()[0].due_date is None
+
+
+def test_update_text_leaves_due_date_untouched_when_omitted(repo):
+    due = date.today()
+    task = repo.add("plan trip", due_date=due)
+    updated = repo.update(task.id, text="plan the trip")
+    assert updated.due_date == due
+
+
 def test_delete_removes_task(repo):
     task = repo.add("temporary", due_date=None)
     repo.delete(task.id)

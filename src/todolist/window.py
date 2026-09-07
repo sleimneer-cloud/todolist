@@ -1,6 +1,15 @@
-from PySide6.QtCore import Qt
+from datetime import date
+
+from PySide6.QtCore import QDate, Qt
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QLineEdit, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QDateEdit,
+    QHBoxLayout,
+    QLineEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 from todolist.geometry import compute_bottom_right_position
 from todolist.repository import TaskRepository
@@ -29,12 +38,23 @@ class TodoWindow(QWidget):
         self.input.setPlaceholderText("할 일 추가...")
         self.input.returnPressed.connect(self._on_add_task)
 
+        self.due_checkbox = QCheckBox("마감일")
+        self.due_edit = QDateEdit(QDate.currentDate())
+        self.due_edit.setCalendarPopup(True)
+        self.due_edit.setEnabled(False)
+        self.due_checkbox.toggled.connect(self.due_edit.setEnabled)
+
+        due_row = QHBoxLayout()
+        due_row.addWidget(self.due_checkbox)
+        due_row.addWidget(self.due_edit)
+
         self.list_layout = QVBoxLayout()
         self.list_layout.setContentsMargins(0, 0, 0, 0)
         self.list_layout.addStretch()
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.input)
+        layout.addLayout(due_row)
         layout.addLayout(self.list_layout)
 
         self._load_tasks()
@@ -52,9 +72,13 @@ class TodoWindow(QWidget):
         text = self.input.text().strip()
         if not text:
             return
-        task = self.repository.add(text, due_date=None)
+        due_date: date | None = (
+            self.due_edit.date().toPython() if self.due_checkbox.isChecked() else None
+        )
+        task = self.repository.add(text, due_date=due_date)
         self._add_row(task)
         self.input.clear()
+        self.due_checkbox.setChecked(False)
 
     def _position_bottom_right(self) -> None:
         screen = QGuiApplication.primaryScreen().availableGeometry()

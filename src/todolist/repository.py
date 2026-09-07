@@ -5,6 +5,8 @@ from typing import Protocol
 from todolist.db import DEFAULT_DB_PATH, connect
 from todolist.models import Task
 
+_UNSET = object()
+
 
 class TaskRepository(Protocol):
     def add(self, text: str, due_date: date | None) -> Task: ...
@@ -12,9 +14,9 @@ class TaskRepository(Protocol):
         self,
         task_id: int,
         *,
-        text: str | None = None,
-        due_date: date | None = None,
-        done: bool | None = None,
+        text: str | None = _UNSET,
+        due_date: date | None = _UNSET,
+        done: bool | None = _UNSET,
     ) -> Task: ...
     def delete(self, task_id: int) -> None: ...
     def list(self) -> list[Task]: ...
@@ -46,14 +48,14 @@ class LocalSqliteRepository:
         self,
         task_id: int,
         *,
-        text: str | None = None,
-        due_date: date | None = None,
-        done: bool | None = None,
+        text: str | None = _UNSET,
+        due_date: date | None = _UNSET,
+        done: bool | None = _UNSET,
     ) -> Task:
         current = self._get(task_id)
-        new_text = current.text if text is None else text
-        new_due_date = current.due_date if due_date is None else due_date
-        new_done = current.done if done is None else done
+        new_text = current.text if text is _UNSET else text
+        new_due_date = current.due_date if due_date is _UNSET else due_date
+        new_done = current.done if done is _UNSET else done
         self._conn.execute(
             "UPDATE tasks SET text = ?, due_date = ?, done = ? WHERE id = ?",
             (

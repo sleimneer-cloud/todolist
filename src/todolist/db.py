@@ -1,7 +1,9 @@
 import sqlite3
 from pathlib import Path
 
-DEFAULT_DB_PATH = Path.home() / "Library" / "Application Support" / "TodoWidget" / "todolist.db"
+DEFAULT_DB_PATH = (
+    Path.home() / "Library" / "Application Support" / "TodoWidget" / "todolist.db"
+)
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS tasks (
