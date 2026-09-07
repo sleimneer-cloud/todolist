@@ -45,7 +45,7 @@ class TodoWindow(QWidget):
             self._add_row(task)
 
     def _add_row(self, task) -> None:
-        row = TaskRow(task)
+        row = TaskRow(task, self.repository)
         self.list_layout.insertWidget(self.list_layout.count() - 1, row)
 
     def _on_add_task(self) -> None:

@@ -23,7 +23,7 @@ Plan: `plan.md` · Spec: `../SPEC.md`
   - Files: `src/todolist/main.py`, `src/todolist/window.py`, `src/todolist/task_row.py`
   - Dependencies: Task 1
 
-- [ ] Task 3: Complete / edit / delete a task
+- [x] Task 3: Complete / edit / delete a task
   - Acceptance: checkbox toggles strikethrough + persists `done`; clicking text allows inline edit that persists; `×` deletes row + DB record
   - Verify: `pytest` (add repository tests if call shapes change); manual toggle/edit/delete + restart to confirm persistence
   - Files: `src/todolist/task_row.py`, `src/todolist/window.py`
