@@ -3,7 +3,7 @@
 Plan: `plan.md` · Spec: `../SPEC.md`
 
 ## Phase 1: Foundation
-- [ ] Task 1: Data layer — model, schema, repository
+- [x] Task 1: Data layer — model, schema, repository
   - Acceptance: `Task` dataclass (id, text, due_date, done); `LocalSqliteRepository` implements add/update/delete/list against SQLite in the OS user-data dir; usable with no Qt import
   - Verify: `pytest tests/test_repository.py`; manual CRUD check via a Python shell across process restarts
   - Files: `src/todolist/models.py`, `src/todolist/db.py`, `src/todolist/repository.py`, `tests/test_repository.py`, `requirements.txt`
