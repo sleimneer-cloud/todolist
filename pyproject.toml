@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.ruff.lint]
+# Due dates are naive calendar dates by design (see SPEC.md) — DTZ flags
+# date.today()/date.fromisoformat() as tz-unaware, which is intentional here.
+ignore = ["DTZ"]
