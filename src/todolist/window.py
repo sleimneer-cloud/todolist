@@ -1,29 +1,23 @@
-from datetime import date
-
-from PySide6.QtCore import QDate, Qt
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import (
-    QCheckBox,
-    QDateEdit,
-    QHBoxLayout,
-    QLineEdit,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QWidget
 
+from todolist.add_task_dialog import AddTaskDialog
 from todolist.geometry import compute_bottom_right_position
 from todolist.repository import TaskRepository
 from todolist.task_row import TaskRow
+from todolist.ui_main_window import Ui_Dialog
 
-WINDOW_WIDTH = 300
-WINDOW_HEIGHT = 420
 SCREEN_MARGIN = 16
 
 
-class TodoWindow(QWidget):
+class TodoWindow(QDialog):
     def __init__(self, repository: TaskRepository, parent: QWidget | None = None):
         super().__init__(parent)
         self.repository = repository
+
+        self.ui = Ui_Dialog()
+        self.ui.setupUi(self)
 
         # Qt.Tool keeps the widget out of the dock/Cmd-Tab switcher, matching
         # a persistent desktop widget rather than a regular application window.
@@ -32,30 +26,12 @@ class TodoWindow(QWidget):
             | Qt.WindowType.WindowStaysOnTopHint
             | Qt.WindowType.Tool
         )
-        self.setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.setFixedSize(self.size())
 
-        self.input = QLineEdit()
-        self.input.setPlaceholderText("할 일 추가...")
-        self.input.returnPressed.connect(self._on_add_task)
-
-        self.due_checkbox = QCheckBox("마감일")
-        self.due_edit = QDateEdit(QDate.currentDate())
-        self.due_edit.setCalendarPopup(True)
-        self.due_edit.setEnabled(False)
-        self.due_checkbox.toggled.connect(self.due_edit.setEnabled)
-
-        due_row = QHBoxLayout()
-        due_row.addWidget(self.due_checkbox)
-        due_row.addWidget(self.due_edit)
-
-        self.list_layout = QVBoxLayout()
-        self.list_layout.setContentsMargins(0, 0, 0, 0)
+        self.list_layout = QVBoxLayout(self.ui.scrollAreaWidgetContents)
         self.list_layout.addStretch()
 
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.input)
-        layout.addLayout(due_row)
-        layout.addLayout(self.list_layout)
+        self.ui.add_todo_button.clicked.connect(self._on_add_task)
 
         self._load_tasks()
         self._position_bottom_right()
@@ -69,16 +45,14 @@ class TodoWindow(QWidget):
         self.list_layout.insertWidget(self.list_layout.count() - 1, row)
 
     def _on_add_task(self) -> None:
-        text = self.input.text().strip()
+        dialog = AddTaskDialog(self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        text, start_date, due_date = dialog.values()
         if not text:
             return
-        due_date: date | None = (
-            self.due_edit.date().toPython() if self.due_checkbox.isChecked() else None
-        )
-        task = self.repository.add(text, due_date=due_date)
+        task = self.repository.add(text, due_date=due_date, start_date=start_date)
         self._add_row(task)
-        self.input.clear()
-        self.due_checkbox.setChecked(False)
 
     def _position_bottom_right(self) -> None:
         screen = QGuiApplication.primaryScreen().availableGeometry()
