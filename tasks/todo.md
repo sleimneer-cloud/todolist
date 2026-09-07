@@ -17,7 +17,7 @@ Plan: `plan.md` · Spec: `../SPEC.md`
 - [ ] Review with human before proceeding
 
 ## Phase 2: Core Interactions
-- [ ] Task 2: Window skeleton — frameless, always-on-top, bottom-right, basic add/list
+- [x] Task 2: Window skeleton — frameless, always-on-top, bottom-right, basic add/list
   - Acceptance: no OS frame, stays on top, pinned bottom-right on launch; text input + Enter adds a task and it appears immediately; restart re-populates from SQLite
   - Verify: existing `pytest` suite green; manual check of frameless/always-on-top/position, add-then-restart persistence
   - Files: `src/todolist/main.py`, `src/todolist/window.py`, `src/todolist/task_row.py`
