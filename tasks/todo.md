@@ -41,13 +41,13 @@ Plan: `plan.md` · Spec: `../SPEC.md`
 - [ ] Review with human before proceeding
 
 ## Phase 3: Polish
-- [ ] Task 5: Lock down window behavior + full walkthrough
+- [x] Task 5: Lock down window behavior + full walkthrough
   - Acceptance: window cannot be resized or dragged; bottom-right position computed from real screen geometry; every SPEC.md Success Criterion passes manual check
   - Verify: full `pytest` suite; manual resize/drag attempt (no effect); full add→complete→edit→delete→coloring→restart walkthrough in one session
-  - Files: `src/todolist/window.py`
+  - Files: none — resize/drag lock already fell out of Task 2 (`setFixedSize` pins min==max; no drag handlers were ever written), so nothing to change here
   - Dependencies: Task 2, Task 3, Task 4
 
 ## Checkpoint: Complete
-- [ ] Every Success Criterion in `SPEC.md` verified manually
-- [ ] `pytest` passes
-- [ ] Ready for review
+- [x] Every Success Criterion in `SPEC.md` verified manually
+- [x] `pytest` passes
+- [x] Ready for review
