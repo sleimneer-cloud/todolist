@@ -1,4 +1,5 @@
-from datetime import date, timedelta
+import sqlite3
+from datetime import datetime, timedelta
 
 import pytest
 
@@ -19,7 +20,7 @@ def test_add_returns_task_with_id(repo):
 
 
 def test_add_with_due_date(repo):
-    due = date.today() + timedelta(days=1)
+    due = datetime.now().replace(microsecond=0) + timedelta(days=1)
     task = repo.add("submit report", due_date=due)
     assert task.due_date == due
 
@@ -47,23 +48,44 @@ def test_update_done(repo):
 
 def test_update_due_date(repo):
     task = repo.add("plan trip", due_date=None)
-    due = date.today()
+    due = datetime.now().replace(microsecond=0)
     updated = repo.update(task.id, due_date=due)
     assert updated.due_date == due
 
 
 def test_update_can_clear_due_date(repo):
-    task = repo.add("plan trip", due_date=date.today())
+    task = repo.add("plan trip", due_date=datetime.now().replace(microsecond=0))
     updated = repo.update(task.id, due_date=None)
     assert updated.due_date is None
     assert repo.list()[0].due_date is None
 
 
 def test_update_text_leaves_due_date_untouched_when_omitted(repo):
-    due = date.today()
+    due = datetime.now().replace(microsecond=0)
     task = repo.add("plan trip", due_date=due)
     updated = repo.update(task.id, text="plan the trip")
     assert updated.due_date == due
+
+
+def test_due_date_preserves_time_component(repo):
+    due = datetime(2026, 9, 10, 18, 30)
+    task = repo.add("submit report", due_date=due)
+    assert task.due_date == due
+    assert repo.list()[0].due_date == due
+
+
+def test_reads_legacy_date_only_due_date(tmp_path):
+    db_path = tmp_path / "todolist.db"
+    LocalSqliteRepository(db_path=db_path)  # creates schema
+
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            "INSERT INTO tasks (text, due_date, start_date, done) VALUES (?, ?, ?, 0)",
+            ("legacy task", "2026-09-08", None),
+        )
+
+    reopened = LocalSqliteRepository(db_path=db_path)
+    assert reopened.list()[0].due_date == datetime(2026, 9, 8)
 
 
 def test_delete_removes_task(repo):

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Protocol
 
@@ -10,14 +10,14 @@ _UNSET = object()
 
 class TaskRepository(Protocol):
     def add(
-        self, text: str, due_date: date | None, start_date: date | None = None
+        self, text: str, due_date: datetime | None, start_date: date | None = None
     ) -> Task: ...
     def update(
         self,
         task_id: int,
         *,
         text: str | None = _UNSET,
-        due_date: date | None = _UNSET,
+        due_date: datetime | None = _UNSET,
         start_date: date | None = _UNSET,
         done: bool | None = _UNSET,
     ) -> Task: ...
@@ -30,7 +30,7 @@ def _row_to_task(row: tuple) -> Task:
     return Task(
         id=task_id,
         text=text,
-        due_date=date.fromisoformat(due_date_str) if due_date_str else None,
+        due_date=datetime.fromisoformat(due_date_str) if due_date_str else None,
         start_date=date.fromisoformat(start_date_str) if start_date_str else None,
         done=bool(done),
     )
@@ -41,7 +41,7 @@ class LocalSqliteRepository:
         self._conn = connect(db_path)
 
     def add(
-        self, text: str, due_date: date | None, start_date: date | None = None
+        self, text: str, due_date: datetime | None, start_date: date | None = None
     ) -> Task:
         cursor = self._conn.execute(
             "INSERT INTO tasks (text, due_date, start_date, done) VALUES (?, ?, ?, 0)",
@@ -65,7 +65,7 @@ class LocalSqliteRepository:
         task_id: int,
         *,
         text: str | None = _UNSET,
-        due_date: date | None = _UNSET,
+        due_date: datetime | None = _UNSET,
         start_date: date | None = _UNSET,
         done: bool | None = _UNSET,
     ) -> Task:

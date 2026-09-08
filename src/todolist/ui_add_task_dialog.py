@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QDateEdit, QDialog,
-    QDialogButtonBox, QFormLayout, QLabel, QLineEdit,
-    QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QDateEdit, QDateTimeEdit,
+    QDialog, QDialogButtonBox, QFormLayout, QLabel,
+    QLineEdit, QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -66,7 +66,7 @@ class Ui_Dialog(object):
 
         self.formLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.add_end_date_label)
 
-        self.add_end_dateEdit = QDateEdit(self.widget)
+        self.add_end_dateEdit = QDateTimeEdit(self.widget)
         self.add_end_dateEdit.setObjectName(u"add_end_dateEdit")
         self.add_end_dateEdit.setCalendarPopup(True)
 
@@ -95,6 +95,7 @@ class Ui_Dialog(object):
         self.add_title_label.setText(QCoreApplication.translate("Dialog", u"\uc77c\uc815 \ucd94\uac00", None))
         self.add_task_label.setText(QCoreApplication.translate("Dialog", u"\ud560\uc77c ", None))
         self.add_start_date_label.setText(QCoreApplication.translate("Dialog", u"\uc2dc\uc791\uc77c", None))
-        self.add_end_date_label.setText(QCoreApplication.translate("Dialog", u"\ub9c8\uac10\uc77c", None))
+        self.add_end_date_label.setText(QCoreApplication.translate("Dialog", u"\ub9c8\uac10\uc77c\uc2dc", None))
+        self.add_end_dateEdit.setDisplayFormat(QCoreApplication.translate("Dialog", u"yyyy-MM-dd HH:mm", None))
     # retranslateUi
 

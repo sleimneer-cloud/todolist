@@ -64,14 +64,17 @@
       <item row="2" column="0">
        <widget class="QLabel" name="add_end_date_label">
         <property name="text">
-         <string>마감일</string>
+         <string>마감일시</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QDateEdit" name="add_end_dateEdit">
+       <widget class="QDateTimeEdit" name="add_end_dateEdit">
         <property name="calendarPopup">
          <bool>true</bool>
+        </property>
+        <property name="displayFormat">
+         <string>yyyy-MM-dd HH:mm</string>
         </property>
        </widget>
       </item>
