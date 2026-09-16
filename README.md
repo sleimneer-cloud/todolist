@@ -62,5 +62,7 @@ pyside6-uic src/todolist/ui/add_task_dialog.ui -o src/todolist/ui_add_task_dialo
 `.app` 재빌드:
 
 ```bash
-pyinstaller --windowed --noconfirm --name TodoList --paths src src/todolist/main.py
+pyinstaller TodoList.spec --noconfirm
 ```
+
+`TodoList.spec`을 지우고 `pyinstaller --windowed ...`로 새로 생성하지 말 것 — `style.qss`를 번들에 포함시키는 `datas` 설정이 스크립트에서 새로 생성한 spec에는 없어서, 앱이 조용히 기본(디자인 없는) 모습으로 돌아간다.
