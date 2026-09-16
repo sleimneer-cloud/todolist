@@ -53,6 +53,17 @@ def test_generate_weekly_report_returns_message_content(monkeypatch):
     assert result == "이번 주 요약입니다."
 
 
+def test_request_sends_a_user_agent(monkeypatch):
+    # urllib의 기본 요청(User-Agent 없음)은 Groq 앞단 Cloudflare가 봇으로 보고
+    # 403(error code: 1010)으로 차단한다 — 실제로 재현/수정한 회귀 방지 테스트.
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    body = {"choices": [{"message": {"content": "ok"}}]}
+    with patch("todolist.weekly_report.urllib.request.urlopen", return_value=_mock_response(body)) as m:
+        generate_weekly_report([_task("a")], WEEK_START, WEEK_END)
+    sent_request = m.call_args[0][0]
+    assert sent_request.get_header("User-agent")
+
+
 def test_http_error_wrapped_as_weekly_report_error(monkeypatch):
     monkeypatch.setenv("GROQ_API_KEY", "test-key")
     error = urllib.error.HTTPError(

@@ -96,6 +96,10 @@ def generate_weekly_report(
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
+            # urllib의 기본 요청(User-Agent 없음)은 Groq 앞단의 Cloudflare가
+            # 봇으로 판단해 요청을 아예 막아버린다 (403, "error code: 1010" —
+            # Groq 서버까지 도달하지도 못한 상태). 이 헤더 하나로 통과된다.
+            "User-Agent": "todolist-widget/1.0",
         },
         method="POST",
     )
