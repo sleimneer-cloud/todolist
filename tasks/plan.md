@@ -50,6 +50,18 @@ interactions and due-date urgency coloring.
 - [ ] `pytest` passes
 - [ ] Ready for review
 
+### Phase 4: Weekly Work Journal
+- [ ] Task 6: `created_at` tracking + weekly repository query
+- [ ] Task 7: LLM weekly report client
+- [ ] Task 8: In-app trigger + report dialog
+
+### Checkpoint: Weekly Journal Complete
+- [ ] `pytest` passes (repository week-query tests + report-client tests)
+- [ ] Adding a task today, then generating this week's journal, includes that task
+- [ ] Generating with no tasks in the current week shows a clear empty-state message, not an error
+- [ ] Generating with no API key configured shows a clear setup message, not a crash
+- [ ] Review with human before proceeding
+
 ---
 
 ## Task 1: Data layer — model, schema, repository
@@ -193,14 +205,140 @@ geometry differs (e.g. external display) — then run through every Success Crit
 
 **Estimated scope:** Small (1 file)
 
+---
+
+## Task 6: `created_at` tracking + weekly repository query
+
+**Description:** Add a `created_at` column so every task records when it was registered, and add
+a repository method to fetch tasks whose `created_at` falls within a given week. This is the
+foundation for the journal feature — everything else (LLM call, UI trigger) reads from this
+query, so it goes first, same reasoning as Task 1.
+
+**Decision:** "This week" is anchored on `created_at` (registration date), not `due_date` or a
+new `completed_at` — the user wants a record of what they worked on, not what was scheduled.
+Week boundaries use the ISO calendar week (Monday-Sunday), via `date.isocalendar()` — no new
+dependency needed, stdlib covers it.
+
+**Acceptance criteria:**
+- [ ] `tasks` table has a `created_at` column (`TEXT`, ISO datetime), backfilled for existing
+      rows with the row's current value or a fixed default (existing rows predate this field —
+      exact date is unknowable, so document the backfill choice rather than guessing precision)
+- [ ] `LocalSqliteRepository.add()` stamps `created_at` automatically — never a caller-supplied
+      value (unlike `due_date`/`start_date`, this is not user-editable)
+- [ ] New method `list_for_week(monday: date, sunday: date) -> list[Task]` returns tasks with
+      `created_at` in that inclusive range, ordered by `created_at`
+- [ ] `TaskRepository` Protocol gains `list_for_week` so the interface stays the single point of
+      data access (per `SPEC.md`'s "Always" boundary)
+
+**Verification:**
+- [ ] Tests pass: `pytest tests/test_repository.py` — cases: task created inside the week, task
+      created before the week, task created after the week (both excluded), empty week
+- [ ] Manual check: add a task, confirm it shows up in `list_for_week` for the current week via a
+      Python shell
+
+**Dependencies:** Task 1 (repository/schema already exists)
+
+**Files likely touched:**
+- `src/todolist/db.py` (migration, mirrors the existing `start_date` `ALTER TABLE` pattern)
+- `src/todolist/models.py` (`Task.created_at` field)
+- `src/todolist/repository.py`
+- `tests/test_repository.py`
+
+**Estimated scope:** Small (4 files)
+
+---
+
+## Task 7: LLM weekly report client
+
+**Description:** A pure module that takes a list of `Task` and a week range, formats them into a
+prompt, calls an LLM API, and returns the generated report text (or raises a typed error the UI
+layer can catch and show). No Qt imports — testable and runnable standalone, same separation
+principle as `TaskRepository`.
+
+**Decision:** Use the Anthropic Claude API directly over stdlib `urllib.request` / `http.client`
+rather than adding the `anthropic` SDK as a dependency — one HTTP call doesn't need a client
+library, and `SPEC.md`'s boundaries require asking before new dependencies. Store the API key
+via macOS Keychain, accessed by shelling out to the built-in `/usr/bin/security` CLI (stdlib
+`subprocess`, no new dependency) — falls back to a local config file with owner-only permissions
+if `security` is unavailable (non-macOS). **Flag for human review before starting:** confirm
+this stdlib-only approach is acceptable instead of `pip install anthropic` + `keyring`, since it
+means hand-rolling request signing/error-handling that a SDK would otherwise cover.
+
+**Acceptance criteria:**
+- [ ] `generate_weekly_report(tasks: list[Task], week_start: date, week_end: date) -> str`
+      builds a prompt from the tasks (text, done/not-done, due date if present) and returns the
+      model's response text
+- [ ] Raises a specific exception (not a bare `Exception`) for: missing API key, network/API
+      error, empty task list (caller decides whether empty is an error or a UI empty-state)
+- [ ] API key is read from Keychain/config at call time, never hardcoded or logged
+- [ ] No Qt import anywhere in this module
+
+**Verification:**
+- [ ] Tests pass: `pytest tests/test_weekly_report.py` — prompt-building logic tested without
+      network calls (mock the HTTP call); error paths tested for missing key and API failure
+- [ ] Manual check: with a real API key configured, call the function directly in a Python shell
+      against a handful of real tasks and confirm the output reads like a work journal
+
+**Dependencies:** Task 6 (needs `Task` objects with `created_at` to build the prompt)
+
+**Files likely touched:**
+- `src/todolist/weekly_report.py` (new)
+- `tests/test_weekly_report.py` (new)
+
+**Estimated scope:** Medium (2 files, new module)
+
+---
+
+## Task 8: In-app trigger + report dialog
+
+**Description:** Add a way to trigger "generate this week's journal" from the widget (e.g. a
+small button or menu item), run the repository query + LLM call on a background thread so the
+always-on-top widget never freezes, and show the result in a simple read-only dialog the user
+can select/copy text from.
+
+**Acceptance criteria:**
+- [ ] A visible control in the widget starts report generation for the current ISO week
+- [ ] The UI thread is never blocked — a `QThread`/`QRunnable` (or `QtConcurrent`-style worker)
+      does the repository query + LLM call, signaling back to the main thread on completion
+- [ ] While generating, the user gets a visible "generating..." state (button disabled or a
+      spinner) instead of a frozen-looking widget
+- [ ] On success, a `QDialog` shows the generated text, selectable/copyable
+- [ ] On failure (no API key, network error, empty week), the same dialog (or a small message)
+      shows a clear, specific message — never a silent failure or raw stack trace
+
+**Verification:**
+- [ ] Tests pass: full `pytest` suite (this task is UI wiring, no new pure-logic tests expected
+      beyond what Tasks 6-7 already cover, consistent with this repo's GUI-is-manual-only
+      testing strategy)
+- [ ] Manual check: add a couple of tasks this week, click generate, confirm the dialog shows a
+      real report; retry with the API key temporarily removed and confirm the error message is
+      clear instead of a crash
+
+**Dependencies:** Task 6, Task 7
+
+**Files likely touched:**
+- `src/todolist/window.py` (trigger control, worker thread wiring)
+- `src/todolist/weekly_report_dialog.py` (new, or inline `QDialog` if small enough)
+
+**Estimated scope:** Medium (2 files)
+
 ## Risks and Mitigations
 | Risk | Impact | Mitigation |
 |------|--------|------------|
 | PySide6 frameless/always-on-top window flags behave inconsistently on macOS | High | Tackled in Task 2, right after the data layer, so surprises surface early rather than at the end |
 | Due-date/urgency tier boundaries are ambiguous (e.g. what counts as "today") | Medium | Boundaries are pure-function unit tested in Task 4 against explicit cases, not left to visual judgment alone |
 | SQLite file location differs across environments | Low | Use Qt's standard user-data-directory API rather than a hardcoded path (Task 1) |
+| Hand-rolled HTTP call to the LLM API (Task 7) has to cover retries/error-shapes a SDK would give for free | Medium | Keep the client function small and single-purpose; revisit adding the `anthropic` SDK later if error handling grows past a few cases |
+| LLM API call blocking the always-on-top UI thread would freeze a widget meant to always be responsive | High | Task 8 explicitly requires a background-thread worker before any dialog is shown |
+| Existing rows have no real `created_at` value to backfill (Task 6) | Low | Documented as a known gap: backfilled rows land in whatever week the migration ran, not their true creation week |
 
 ## Open Questions
 - Exact hex colors for the three urgency tiers — left to implementation-time choice within
   the "eye-catching / medium / muted" intent from `SPEC.md`; flag for a quick look once Task 4
   is visually running.
+- Task 7's stdlib-only HTTP approach vs. adding the `anthropic` SDK dependency — needs a human
+  decision before Task 7 starts, since `SPEC.md` requires asking before new dependencies.
+- Which Claude model to call, and how to bound response length/cost per generation — not yet
+  decided; default to a fast/cheap model unless told otherwise.
+- No way yet to generate a *past* week's journal (only "this week") — acceptable for v1, flagged
+  as a likely fast-follow rather than in scope now.

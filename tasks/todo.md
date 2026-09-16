@@ -51,3 +51,30 @@ Plan: `plan.md` · Spec: `../SPEC.md`
 - [x] Every Success Criterion in `SPEC.md` verified manually
 - [x] `pytest` passes
 - [x] Ready for review
+
+## Phase 4: Weekly Work Journal
+- [ ] Task 6: `created_at` tracking + weekly repository query
+  - Acceptance: `tasks` table has `created_at` (auto-stamped on `add`, not caller-supplied); `list_for_week(monday, sunday)` returns tasks with `created_at` in that inclusive range; `TaskRepository` Protocol gains the method
+  - Verify: `pytest tests/test_repository.py` (inside/before/after week, empty week cases); manual add-then-query check via Python shell
+  - Files: `src/todolist/db.py`, `src/todolist/models.py`, `src/todolist/repository.py`, `tests/test_repository.py`
+  - Dependencies: Task 1
+
+- [ ] Task 7: LLM weekly report client
+  - Acceptance: `generate_weekly_report(tasks, week_start, week_end) -> str` builds a prompt and returns model output; raises specific errors for missing API key / network failure; API key read from Keychain (or local config fallback), never hardcoded; no Qt import
+  - Verify: `pytest tests/test_weekly_report.py` with the HTTP call mocked (prompt-building + error paths); manual run against a real API key
+  - Files: `src/todolist/weekly_report.py`, `tests/test_weekly_report.py`
+  - Dependencies: Task 6
+  - **Needs a decision before starting:** stdlib-only HTTP call vs. adding the `anthropic` SDK — `SPEC.md` requires asking before new dependencies
+
+- [ ] Task 8: In-app trigger + report dialog
+  - Acceptance: a control in the widget starts generation for the current ISO week; repository query + LLM call run off the UI thread; a "generating..." state is visible while running; success shows a copyable `QDialog`; failure (no key / network / empty week) shows a clear message, never a crash or silent failure
+  - Verify: full `pytest` suite; manual click-through with tasks present, with an empty week, and with the API key removed
+  - Files: `src/todolist/window.py`, `src/todolist/weekly_report_dialog.py`
+  - Dependencies: Task 6, Task 7
+
+## Checkpoint: Weekly Journal Complete
+- [ ] `pytest` passes (repository week-query tests + report-client tests)
+- [ ] Adding a task today, then generating this week's journal, includes that task
+- [ ] Generating with no tasks in the current week shows a clear empty-state message, not an error
+- [ ] Generating with no API key configured shows a clear setup message, not a crash
+- [ ] Review with human before proceeding
