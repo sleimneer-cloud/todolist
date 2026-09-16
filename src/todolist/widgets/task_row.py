@@ -14,10 +14,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from todolist.due_format import format_due
-from todolist.models import Task
-from todolist.repository import TaskRepository
-from todolist.urgency import urgency_color
+from todolist.data.models import Task
+from todolist.data.repository import TaskRepository
+from todolist.logic.due_format import format_due
+from todolist.logic.urgency import urgency_color
 
 ROW_HEIGHT = 30
 URGENCY_BAR_WIDTH = 3
@@ -119,7 +119,11 @@ class TaskRow(QWidget):
 
     def _on_toggle_done(self) -> None:
         if self.checkbox.isChecked():
-            self.repository.delete(self.task.id)
+            # DB에서 지우지 않는다 — row는 완료 상태로 남겨야 주간 업무일지가
+            # (list_for_week로) 이번 주에 완료한 일까지 요약에 포함시킬 수
+            # 있다. deleted 시그널은 "목록 창에서 사라졌다"는 뜻이지 DB
+            # 삭제를 의미하지 않는다 (× 버튼 쪽만 진짜로 delete()한다).
+            self.repository.update(self.task.id, done=True)
             self.deleted.emit()
             self.deleteLater()
 

@@ -1,4 +1,4 @@
-from todolist.geometry import compute_bottom_right_position
+from todolist.logic.geometry import compute_bottom_right_position
 
 
 def test_bottom_right_with_margin():

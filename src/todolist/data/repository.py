@@ -2,8 +2,8 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Protocol
 
-from todolist.db import DEFAULT_DB_PATH, connect
-from todolist.models import Task
+from todolist.data.db import DEFAULT_DB_PATH, connect
+from todolist.data.models import Task
 
 _UNSET = object()
 

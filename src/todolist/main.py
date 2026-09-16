@@ -3,10 +3,10 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QApplication
 
-from todolist.repository import LocalSqliteRepository
-from todolist.window import TodoWindow
+from todolist.data.repository import LocalSqliteRepository
+from todolist.widgets.window import TodoWindow
 
-STYLE_PATH = Path(__file__).with_name("style.qss")
+STYLE_PATH = Path(__file__).parent / "widgets" / "style.qss"
 
 
 def load_stylesheet() -> str:

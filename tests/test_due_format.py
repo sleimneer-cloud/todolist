@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from todolist.due_format import format_due
+from todolist.logic.due_format import format_due
 
 NOW = datetime(2026, 9, 15, 10, 0)
 

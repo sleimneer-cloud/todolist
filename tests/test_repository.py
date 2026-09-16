@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 
 import pytest
 
-from todolist.repository import LocalSqliteRepository
+from todolist.data.repository import LocalSqliteRepository
 
 
 @pytest.fixture
@@ -143,6 +143,26 @@ def test_list_for_week_includes_only_tasks_created_in_range(tmp_path):
     reopened = LocalSqliteRepository(db_path=db_path)
     week_tasks = reopened.list_for_week(monday, sunday)
     assert [t.text for t in week_tasks] == ["monday", "sunday"]
+
+
+def test_completing_a_task_keeps_it_in_the_db_marked_done(repo):
+    # 체크박스로 완료 처리해도 delete()가 아니라 update(done=True)만 호출된다
+    # (task_row.py) — 그래야 완료한 일도 주간 리포트에 남는다. 여기선
+    # repository 계약만 확인한다: done=True로 update해도 행이 사라지지 않는다.
+    task = repo.add("완료할 일", due_date=None)
+    repo.update(task.id, done=True)
+    tasks = repo.list()
+    assert len(tasks) == 1
+    assert tasks[0].done is True
+
+
+def test_list_for_week_includes_completed_tasks(repo):
+    task = repo.add("이번 주에 끝낸 일", due_date=None)
+    repo.update(task.id, done=True)
+    today = date.today()
+    week_tasks = repo.list_for_week(today, today)
+    assert [t.text for t in week_tasks] == ["이번 주에 끝낸 일"]
+    assert week_tasks[0].done is True
 
 
 def test_list_for_week_empty_when_no_tasks_in_range(repo):

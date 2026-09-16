@@ -3,7 +3,7 @@ from datetime import date, datetime
 from PySide6.QtCore import QDate, QDateTime
 from PySide6.QtWidgets import QDialog, QWidget
 
-from todolist.ui_add_task_dialog import Ui_Dialog
+from todolist.generated.ui_add_task_dialog import Ui_Dialog
 
 
 class AddTaskDialog(QDialog):

@@ -33,14 +33,14 @@ PYTHONPATH=src python -m todolist.main
 
 - 화면 우하단에 창이 뜨면 **"일정 추가"** 버튼 클릭
 - 모달에서 **할일 내용 / 시작일 / 마감일시**를 입력하고 저장
-- 목록에서 **체크박스**를 클릭하면 확인 없이 즉시 삭제, **텍스트 클릭**으로 인라인 수정, **×** 버튼으로도 삭제 가능
+- 목록에서 **체크박스**를 클릭하면 확인 없이 목록에서 즉시 사라짐(완료 처리 — DB에는 완료 상태로 남아 주간 업무일지에 반영됨), **텍스트 클릭**으로 인라인 수정, **×** 버튼으로는 DB에서까지 완전히 삭제
 - 창은 크기 조절/드래그가 되지 않으며, 재시작해도 기존 목록이 그대로 유지된다 (SQLite 로컬 저장)
 
 ## 현재 기능
 
 - 프레임 없는 always-on-top 위젯, 화면 우하단 고정 — 헤더의 📌 버튼으로 껐다 켰다 가능
 - 할 일 추가 (내용 / 시작일 / 마감일시)
-- 체크 시 즉시 삭제(완료 처리), 인라인 텍스트 수정, × 버튼 삭제
+- 체크 시 목록에서 즉시 사라짐(완료 처리 — DB에는 완료 상태로 남음), 인라인 텍스트 수정, × 버튼으로 완전 삭제
 - 마감일 기준 색상 표시: 오늘 이후 마감(지남 포함) `빨강` · 3일 이내 `주황` · 그 외/마감일 없음 `회색`
   (색상 판정은 날짜 단위이며 마감 시각은 판정에 영향을 주지 않는다)
 - SQLite 로컬 영구 저장 (앱 재시작해도 유지)
@@ -94,11 +94,11 @@ pytest          # 테스트
 ruff check .    # 린트
 ```
 
-Qt Designer로 `.ui` 수정 후 코드 재생성 (`src/todolist/ui/`가 디자인 소스, `src/todolist/ui_*.py`는 생성물이라 직접 수정 금지):
+Qt Designer로 `.ui` 수정 후 코드 재생성 (`src/todolist/designer/`가 디자인 소스, `src/todolist/generated/`는 생성물이라 직접 수정 금지):
 
 ```bash
-pyside6-uic src/todolist/ui/main_window.ui -o src/todolist/ui_main_window.py
-pyside6-uic src/todolist/ui/add_task_dialog.ui -o src/todolist/ui_add_task_dialog.py
+pyside6-uic src/todolist/designer/main_window.ui -o src/todolist/generated/ui_main_window.py
+pyside6-uic src/todolist/designer/add_task_dialog.ui -o src/todolist/generated/ui_add_task_dialog.py
 ```
 
 `.app` 재빌드:

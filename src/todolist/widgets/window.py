@@ -10,17 +10,17 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from todolist.add_task_dialog import AddTaskDialog
-from todolist.geometry import compute_bottom_right_position
-from todolist.repository import TaskRepository
-from todolist.task_row import TaskRow
-from todolist.ui_main_window import Ui_Dialog
-from todolist.weekly_report import (
+from todolist.data.repository import TaskRepository
+from todolist.generated.ui_main_window import Ui_Dialog
+from todolist.logic.geometry import compute_bottom_right_position
+from todolist.logic.weekly_report import (
     MissingApiKeyError,
     WeeklyReportError,
     generate_weekly_report,
 )
-from todolist.weekly_report_dialog import WeeklyReportDialog
+from todolist.widgets.add_task_dialog import AddTaskDialog
+from todolist.widgets.task_row import TaskRow
+from todolist.widgets.weekly_report_dialog import WeeklyReportDialog
 
 SCREEN_MARGIN = 16
 
@@ -92,8 +92,11 @@ class TodoWindow(QDialog):
         self._position_bottom_right()
 
     def _load_tasks(self) -> None:
+        # done=True인 행도 DB엔 남아있다(주간 리포트용) — 목록 창에는 아직
+        # 안 끝난 일만 보여준다.
         for task in self.repository.list():
-            self._add_row(task)
+            if not task.done:
+                self._add_row(task)
         self._update_count()
 
     def _add_row(self, task) -> None:
@@ -103,8 +106,10 @@ class TodoWindow(QDialog):
 
     def _update_count(self) -> None:
         # 위젯 수명(deleteLater는 지연 삭제라 세는 시점이 애매하다)을 세는 대신
-        # 저장소를 다시 센다. 삭제는 deleted 시그널 전에 이미 커밋돼 있다.
-        self.ui.count_label.setText(f"{len(self.repository.list())}개")
+        # 저장소를 다시 센다. 삭제(또는 완료 처리)는 deleted 시그널 전에 이미
+        # 커밋돼 있다. done인 행은 목록에 없으니 개수에서도 뺀다.
+        remaining = sum(1 for t in self.repository.list() if not t.done)
+        self.ui.count_label.setText(f"{remaining}개")
 
     def _on_add_task(self) -> None:
         dialog = AddTaskDialog(self)

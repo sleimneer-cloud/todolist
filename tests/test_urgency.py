@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from todolist.urgency import TIER_COLORS, urgency_tier
+from todolist.logic.urgency import TIER_COLORS, urgency_tier
 
 TODAY = date(2026, 9, 7)
 

@@ -11,8 +11,8 @@ import urllib.error
 import urllib.request
 from datetime import date
 
-from todolist.db import DEFAULT_DB_PATH
-from todolist.models import Task
+from todolist.data.db import DEFAULT_DB_PATH
+from todolist.data.models import Task
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 # Groq는 무료 모델 라인업이 자주 바뀐다 — 최신 목록은

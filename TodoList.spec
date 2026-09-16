@@ -5,7 +5,7 @@ a = Analysis(
     ['src/todolist/main.py'],
     pathex=['src'],
     binaries=[],
-    datas=[('src/todolist/style.qss', 'todolist')],
+    datas=[('src/todolist/widgets/style.qss', 'todolist/widgets')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
