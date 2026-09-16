@@ -67,6 +67,26 @@ GROQ_API_KEY "여기에_키"`로 세션 전역에 등록하거나, 터미널에�
 (`llama-3.3-70b-versatile`)을 쓰며, 다른 모델로 바꾸려면 `GROQ_MODEL` 환경변수를 설정한다 — 현재
 사용 가능한 모델 목록은 [console.groq.com/docs/models](https://console.groq.com/docs/models)에서 확인.
 
+### 프롬프트 문구 커스터마이즈
+
+실제로 보내는 프롬프트 문구는 코드가 아니라 텍스트 파일에 있다:
+
+```
+~/Library/Application Support/TodoWidget/weekly_report_prompt.txt
+```
+
+처음 리포트를 생성할 때 기본 문구로 자동 생성되며, 이 파일을 텍스트 에디터로 열어 직접 수정하면
+코드를 고치거나 앱을 다시 빌드하지 않고도 다음 생성부터 바로 반영된다. 파일 안에는 아래 세 자리표시자를
+원하는 위치에 넣을 수 있다 (Python `str.format()`이 채워 넣는다 — 그 외 문구는 자유롭게 수정 가능):
+
+| 자리표시자 | 채워지는 값 |
+|---|---|
+| `{week_start}` | 이번 주 월요일 (`YYYY-MM-DD`) |
+| `{week_end}` | 이번 주 일요일 (`YYYY-MM-DD`) |
+| `{task_block}` | 할 일 목록, 한 줄에 하나씩 (완료 여부·마감일 포함) |
+
+문구에 실제 중괄호 `{`/`}`를 쓰고 싶다면 `{{`/`}}`로 두 번 써야 한다 (`str.format()`의 이스케이프 규칙).
+
 ## 개발
 
 ```bash

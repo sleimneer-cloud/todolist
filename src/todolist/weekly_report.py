@@ -11,6 +11,7 @@ import urllib.error
 import urllib.request
 from datetime import date
 
+from todolist.db import DEFAULT_DB_PATH
 from todolist.models import Task
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -19,6 +20,25 @@ GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 # GROQ_MODEL 환경변수로 덮어쓴다.
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
 REQUEST_TIMEOUT_SECONDS = 30
+
+# 프롬프트 문구를 코드가 아니라 텍스트 파일로 보관 — 사용자가 코드를 고치지
+# 않고도 이 파일만 열어서 문구를 바꿀 수 있다. DB와 같은 디렉터리에 둔다.
+# {week_start}/{week_end}/{task_block} 세 자리표시자를 채워 넣는다 (README 참고).
+PROMPT_TEMPLATE_PATH = DEFAULT_DB_PATH.parent / "weekly_report_prompt.txt"
+DEFAULT_PROMPT_TEMPLATE = (
+    "{week_start} ~ {week_end} 한 주간의 할 일 목록:\n\n"
+    "{task_block}\n\n"
+    "위 목록을 바탕으로 이번 주 업무를 요약하는 한국어 주간 업무일지를 "
+    "3~5문장으로 작성해줘. 목록을 그대로 나열하지 말고 자연스러운 "
+    "문장으로 정리해줘."
+)
+
+
+def _load_prompt_template() -> str:
+    if not PROMPT_TEMPLATE_PATH.exists():
+        PROMPT_TEMPLATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        PROMPT_TEMPLATE_PATH.write_text(DEFAULT_PROMPT_TEMPLATE, encoding="utf-8")
+    return PROMPT_TEMPLATE_PATH.read_text(encoding="utf-8")
 
 
 class MissingApiKeyError(Exception):
@@ -41,12 +61,11 @@ def _build_prompt(tasks: list[Task], week_start: date, week_end: date) -> str:
             lines.append(line)
         task_block = "\n".join(lines)
 
-    return (
-        f"{week_start:%Y-%m-%d} ~ {week_end:%Y-%m-%d} 한 주간의 할 일 목록:\n\n"
-        f"{task_block}\n\n"
-        "위 목록을 바탕으로 이번 주 업무를 요약하는 한국어 주간 업무일지를 "
-        "3~5문장으로 작성해줘. 목록을 그대로 나열하지 말고 자연스러운 "
-        "문장으로 정리해줘."
+    template = _load_prompt_template()
+    return template.format(
+        week_start=f"{week_start:%Y-%m-%d}",
+        week_end=f"{week_end:%Y-%m-%d}",
+        task_block=task_block,
     )
 
 

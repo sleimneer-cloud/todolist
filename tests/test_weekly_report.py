@@ -16,6 +16,16 @@ WEEK_START = date(2026, 9, 14)
 WEEK_END = date(2026, 9, 20)
 
 
+@pytest.fixture(autouse=True)
+def _isolated_prompt_template(tmp_path, monkeypatch):
+    # 실제 사용자의 ~/Library 템플릿 파일을 읽거나 덮어쓰지 않도록, 매 테스트마다
+    # 임시 경로로 바꿔치기한다 — 없으면 개발자가 커스터마이즈해둔 실제 파일을
+    # 테스트가 읽어버려 결과가 머신마다 달라진다.
+    monkeypatch.setattr(
+        "todolist.weekly_report.PROMPT_TEMPLATE_PATH", tmp_path / "weekly_report_prompt.txt"
+    )
+
+
 def _task(text: str, done: bool = False) -> Task:
     return Task(id=1, text=text, due_date=None, done=done)
 
@@ -93,3 +103,37 @@ def test_due_date_included_in_prompt(monkeypatch):
     sent_body = json.loads(m.call_args[0][0].data)
     assert "발표 준비" in sent_body["messages"][0]["content"]
     assert "09-18 14:00" in sent_body["messages"][0]["content"]
+
+
+def test_prompt_template_file_created_with_default_on_first_use(tmp_path, monkeypatch):
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    template_path = tmp_path / "weekly_report_prompt.txt"
+    monkeypatch.setattr("todolist.weekly_report.PROMPT_TEMPLATE_PATH", template_path)
+    assert not template_path.exists()
+
+    body = {"choices": [{"message": {"content": "ok"}}]}
+    with patch("todolist.weekly_report.urllib.request.urlopen", return_value=_mock_response(body)):
+        generate_weekly_report([_task("a")], WEEK_START, WEEK_END)
+
+    assert template_path.exists()
+    from todolist.weekly_report import DEFAULT_PROMPT_TEMPLATE
+
+    assert template_path.read_text(encoding="utf-8") == DEFAULT_PROMPT_TEMPLATE
+
+
+def test_editing_template_file_changes_the_sent_prompt(tmp_path, monkeypatch):
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    template_path = tmp_path / "weekly_report_prompt.txt"
+    template_path.write_text(
+        "커스텀 템플릿 — {week_start}부터 {week_end}까지.\n{task_block}", encoding="utf-8"
+    )
+    monkeypatch.setattr("todolist.weekly_report.PROMPT_TEMPLATE_PATH", template_path)
+
+    body = {"choices": [{"message": {"content": "ok"}}]}
+    with patch("todolist.weekly_report.urllib.request.urlopen", return_value=_mock_response(body)) as m:
+        generate_weekly_report([_task("커스텀 확인용")], WEEK_START, WEEK_END)
+
+    sent_body = json.loads(m.call_args[0][0].data)
+    sent_prompt = sent_body["messages"][0]["content"]
+    assert "커스텀 템플릿" in sent_prompt
+    assert "커스텀 확인용" in sent_prompt
