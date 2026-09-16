@@ -26,11 +26,16 @@ REQUEST_TIMEOUT_SECONDS = 30
 # {week_start}/{week_end}/{task_block} 세 자리표시자를 채워 넣는다 (README 참고).
 PROMPT_TEMPLATE_PATH = DEFAULT_DB_PATH.parent / "weekly_report_prompt.txt"
 DEFAULT_PROMPT_TEMPLATE = (
-    "{week_start} ~ {week_end} 한 주간의 할 일 목록:\n\n"
+    "{week_start} ~ {week_end} 한 주간 처리한 할 일 목록:\n\n"
     "{task_block}\n\n"
-    "위 목록을 바탕으로 이번 주 업무를 요약하는 한국어 주간 업무일지를 "
-    "3~5문장으로 작성해줘. 목록을 그대로 나열하지 말고 자연스러운 "
-    "문장으로 정리해줘."
+    "위 목록을 참고해서 아래 형식의 한국어 주간 업무일지를 작성해줘.\n\n"
+    "[이번 주 요약]\n\n"
+    "* 항목1\n"
+    "* 항목2\n\n"
+    "규칙:\n"
+    "- 목록에 없는 내용을 지어내지 말고, 실제 항목만 불릿으로 정리해줘.\n"
+    "- \"[완료]\"/\"[미완료]\" 표시나 마감일 텍스트를 그대로 옮기지 말고 "
+    "자연스러운 업무 표현으로 바꿔줘."
 )
 
 

@@ -23,7 +23,7 @@ class TaskRepository(Protocol):
     ) -> Task: ...
     def delete(self, task_id: int) -> None: ...
     def list(self) -> list[Task]: ...
-    def list_for_week(self, monday: date, sunday: date) -> list[Task]: ...
+    def list_for_week(self, start: date, end: date) -> list[Task]: ...
 
 
 def _row_to_task(row: tuple) -> Task:
@@ -110,14 +110,17 @@ class LocalSqliteRepository:
         ).fetchall()
         return [_row_to_task(row) for row in rows]
 
-    def list_for_week(self, monday: date, sunday: date) -> list[Task]:
-        # created_at은 "YYYY-MM-DDTHH:MM:SS.ffffff" ISO 형식 문자열로 저장돼
-        # 있다. SQLite의 date()는 이 T-구분자 형식을 그대로 인식하므로
+    def list_for_week(self, start: date, end: date) -> list[Task]:
+        # 파라미터 이름은 반드시 월~일일 필요는 없다 — 호출자가 임의의 7일(또는
+        # 다른 길이) 구간을 넘겨도 그대로 동작한다 (window.py는 "오늘부터
+        # 거꾸로 6일"을 넘긴다). created_at은
+        # "YYYY-MM-DDTHH:MM:SS.ffffff" ISO 형식 문자열로 저장돼 있다. SQLite의
+        # date()는 이 T-구분자 형식을 그대로 인식하므로
         # (sqlite.org/lang_datefunc.html) 별도 변환 없이 날짜만 뽑아 비교한다.
         rows = self._conn.execute(
             "SELECT id, text, due_date, start_date, done, created_at FROM tasks "
             "WHERE date(created_at) BETWEEN ? AND ? ORDER BY id",
-            (monday.isoformat(), sunday.isoformat()),
+            (start.isoformat(), end.isoformat()),
         ).fetchall()
         return [_row_to_task(row) for row in rows]
 

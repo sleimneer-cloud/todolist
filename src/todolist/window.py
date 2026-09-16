@@ -128,9 +128,13 @@ class TodoWindow(QDialog):
         self.show()
 
     def _on_generate_report(self) -> None:
+        # 캘린더상의 "이번 주 월~일"이 아니라, 버튼을 누른 시점부터 거꾸로
+        # 6일 전까지 최근 7일을 가져온다 — 사람마다/업무마다 "한 주"의 경계가
+        # 다르고(예: 지난주 목요일에 시작해 이번 주 화요일에 끝난 일), 고정된
+        # 월~일 경계로 자르면 그 흐름이 끊긴다.
         today = date.today()
-        week_start = today - timedelta(days=today.weekday())  # 이번 주 월요일
-        week_end = week_start + timedelta(days=6)  # 이번 주 일요일
+        week_start = today - timedelta(days=6)
+        week_end = today
         tasks = self.repository.list_for_week(week_start, week_end)
         if not tasks:
             QMessageBox.information(
