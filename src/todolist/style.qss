@@ -1,0 +1,206 @@
+/* TodoList 위젯 스타일.
+ *
+ * 색/여백/폰트는 전부 여기서 바꾼다 — .ui는 "무엇이 어디에"(구조)만 담당하고,
+ * 이 파일이 "어떻게 보이는지"를 담당한다. 여기만 고치고 앱을 다시 켜면 되므로
+ * 겉모습 조정에 Qt Designer를 열 필요가 없다.
+ *
+ * QSS는 CSS의 부분집합이다: flexbox/grid/::before/애니메이션은 지원하지 않고,
+ * 배치는 여전히 .ui의 레이아웃이 결정한다.
+ */
+
+/* ── 창 ─────────────────────────────────────────────── */
+
+/* ponytail: 모서리를 둥글게 하려면 WA_TranslucentBackground가 필요한데, 그걸
+ * 켜면 QSS 배경이 아예 칠해지지 않아 창이 투명해진다(실측 확인). 각진 모서리로
+ * 둔다. 정말 필요해지면 업그레이드 경로는 setMask()로 창 모양을 깎는 것 —
+ * 다만 마스크는 안티에일리어싱이 없어 계단 현상이 생긴다. */
+QDialog {
+    background-color: #242528;
+    border: 1px solid #3a3b40;
+}
+
+QWidget {
+    font-family: "Apple SD Gothic Neo", "Helvetica Neue", sans-serif;
+    font-size: 13px;
+    color: #e8e8ea;
+}
+
+/* ── 헤더 ───────────────────────────────────────────── */
+
+QLabel#title_label {
+    font-size: 15px;
+    font-weight: 500;
+    color: #f5f5f7;
+}
+
+QLabel#count_label {
+    font-size: 12px;
+    color: #6e7178;
+}
+
+QLabel#add_title_label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #f5f5f7;
+}
+
+/* ── 목록 ───────────────────────────────────────────── */
+
+QScrollArea,
+QScrollArea > QWidget > QWidget {
+    background: transparent;
+    border: none;
+}
+
+QWidget#taskRow {
+    border-top: 1px solid #35363a;
+}
+
+QLabel#taskLabel {
+    color: #e8e8ea;
+    background: transparent;
+}
+
+QLabel#taskLabel:hover {
+    color: #ffffff;
+}
+
+/* 색상은 task_row.py가 긴급도에 따라 런타임에 덮어쓴다 (여기 값은 대체용). */
+QLabel#dueLabel {
+    font-size: 11px;
+    color: #6e7178;
+    background: transparent;
+}
+
+QPushButton#deleteButton {
+    color: #5c5e64;
+    background: transparent;
+    border: none;
+    font-size: 15px;
+    padding: 0px;
+}
+
+QPushButton#deleteButton:hover {
+    color: #e5484d;
+}
+
+/* ── 체크박스 ───────────────────────────────────────── */
+
+QCheckBox {
+    spacing: 0px;
+    background: transparent;
+}
+
+QCheckBox::indicator {
+    width: 13px;
+    height: 13px;
+    border: 1px solid #5c5e64;
+    border-radius: 3px;
+    background: transparent;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #8b8d94;
+}
+
+QCheckBox::indicator:checked {
+    background: #4a8cf7;
+    border-color: #4a8cf7;
+}
+
+/* ── 버튼 ───────────────────────────────────────────── */
+
+QPushButton#add_todo_button {
+    color: #8b8d94;
+    background: transparent;
+    border: 1px dashed #46474c;
+    border-radius: 6px;
+    padding: 7px;
+}
+
+QPushButton#add_todo_button:hover {
+    color: #e8e8ea;
+    border-color: #6e7178;
+    border-style: solid;
+}
+
+QPushButton#add_todo_button:pressed {
+    background: #2c2d31;
+}
+
+/* ── 입력 ───────────────────────────────────────────── */
+
+QLineEdit,
+QDateEdit,
+QDateTimeEdit {
+    background: #2c2d31;
+    border: 1px solid #46474c;
+    border-radius: 5px;
+    padding: 4px 7px;
+    selection-background-color: #4a8cf7;
+}
+
+QLineEdit:focus,
+QDateEdit:focus,
+QDateTimeEdit:focus {
+    border-color: #4a8cf7;
+}
+
+QDateEdit::drop-down,
+QDateTimeEdit::drop-down {
+    border: none;
+    width: 16px;
+}
+
+/* ── 스크롤바 ───────────────────────────────────────── */
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 6px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #46474c;
+    border-radius: 3px;
+    min-height: 24px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #6e7178;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+    height: 0px;
+}
+
+/* ── 다이얼로그 버튼 ────────────────────────────────── */
+
+/* 지정하지 않으면 macOS 기본 흰 버튼이 어두운 배경 위에 그대로 나와
+ * 글자가 거의 안 보인다. */
+QDialogButtonBox QPushButton {
+    color: #e8e8ea;
+    background: #2c2d31;
+    border: 1px solid #46474c;
+    border-radius: 5px;
+    padding: 5px 14px;
+    min-width: 62px;
+}
+
+QDialogButtonBox QPushButton:hover {
+    border-color: #6e7178;
+}
+
+QDialogButtonBox QPushButton:default {
+    color: #ffffff;
+    background: #4a8cf7;
+    border-color: #4a8cf7;
+}
+
+QDialogButtonBox QPushButton:default:hover {
+    background: #3d7de8;
+}

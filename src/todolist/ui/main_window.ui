@@ -6,121 +6,106 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>570</width>
-    <height>588</height>
+    <width>320</width>
+    <height>420</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>350</width>
-    <height>400</height>
+    <width>300</width>
+    <height>360</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>todolist</string>
   </property>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>30</y>
-     <width>551</width>
-     <height>501</height>
-    </rect>
+  <layout class="QVBoxLayout" name="root_layout">
+   <property name="leftMargin">
+    <number>14</number>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
+   <property name="topMargin">
+    <number>12</number>
+   </property>
+   <property name="rightMargin">
+    <number>14</number>
+   </property>
+   <property name="bottomMargin">
+    <number>12</number>
+   </property>
+   <property name="spacing">
+    <number>10</number>
+   </property>
+   <item>
+    <layout class="QHBoxLayout" name="header_layout">
+     <property name="spacing">
+      <number>8</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="title_label">
+       <property name="text">
+        <string>할 일</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="count_label">
+       <property name="text">
+        <string>0개</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="header_spacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="frameShape">
+      <enum>QFrame::Shape::NoFrame</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>292</width>
+        <height>340</height>
+       </rect>
       </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <widget class="QWidget" name="widget" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>400</width>
-        <height>450</height>
-       </size>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QLabel" name="title_label">
-         <property name="font">
-          <font>
-           <family>Apple Braille</family>
-           <pointsize>18</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>TO-DO LIST</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QScrollArea" name="scrollArea">
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>374</width>
-            <height>412</height>
-           </rect>
-          </property>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="add_todo_button">
-         <property name="text">
-          <string>일정 추가</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </widget>
-    </item>
-    <item>
-     <spacer name="horizontalSpacer_2">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-   </layout>
-  </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="add_todo_button">
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
+     <property name="text">
+      <string>＋  일정 추가</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
