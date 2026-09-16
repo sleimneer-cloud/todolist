@@ -23,16 +23,18 @@ class TaskRepository(Protocol):
     ) -> Task: ...
     def delete(self, task_id: int) -> None: ...
     def list(self) -> list[Task]: ...
+    def list_for_week(self, monday: date, sunday: date) -> list[Task]: ...
 
 
 def _row_to_task(row: tuple) -> Task:
-    task_id, text, due_date_str, start_date_str, done = row
+    task_id, text, due_date_str, start_date_str, done, created_at_str = row
     return Task(
         id=task_id,
         text=text,
         due_date=datetime.fromisoformat(due_date_str) if due_date_str else None,
         start_date=date.fromisoformat(start_date_str) if start_date_str else None,
         done=bool(done),
+        created_at=datetime.fromisoformat(created_at_str) if created_at_str else None,
     )
 
 
@@ -43,12 +45,15 @@ class LocalSqliteRepository:
     def add(
         self, text: str, due_date: datetime | None, start_date: date | None = None
     ) -> Task:
+        created_at = datetime.now()
         cursor = self._conn.execute(
-            "INSERT INTO tasks (text, due_date, start_date, done) VALUES (?, ?, ?, 0)",
+            "INSERT INTO tasks (text, due_date, start_date, done, created_at) "
+            "VALUES (?, ?, ?, 0, ?)",
             (
                 text,
                 due_date.isoformat() if due_date else None,
                 start_date.isoformat() if start_date else None,
+                created_at.isoformat(),
             ),
         )
         self._conn.commit()
@@ -58,6 +63,7 @@ class LocalSqliteRepository:
             due_date=due_date,
             start_date=start_date,
             done=False,
+            created_at=created_at,
         )
 
     def update(
@@ -91,6 +97,7 @@ class LocalSqliteRepository:
             due_date=new_due_date,
             start_date=new_start_date,
             done=new_done,
+            created_at=current.created_at,
         )
 
     def delete(self, task_id: int) -> None:
@@ -99,13 +106,24 @@ class LocalSqliteRepository:
 
     def list(self) -> list[Task]:
         rows = self._conn.execute(
-            "SELECT id, text, due_date, start_date, done FROM tasks ORDER BY id"
+            "SELECT id, text, due_date, start_date, done, created_at FROM tasks ORDER BY id"
+        ).fetchall()
+        return [_row_to_task(row) for row in rows]
+
+    def list_for_week(self, monday: date, sunday: date) -> list[Task]:
+        # created_at은 "YYYY-MM-DDTHH:MM:SS.ffffff" ISO 형식 문자열로 저장돼
+        # 있다. SQLite의 date()는 이 T-구분자 형식을 그대로 인식하므로
+        # (sqlite.org/lang_datefunc.html) 별도 변환 없이 날짜만 뽑아 비교한다.
+        rows = self._conn.execute(
+            "SELECT id, text, due_date, start_date, done, created_at FROM tasks "
+            "WHERE date(created_at) BETWEEN ? AND ? ORDER BY id",
+            (monday.isoformat(), sunday.isoformat()),
         ).fetchall()
         return [_row_to_task(row) for row in rows]
 
     def _get(self, task_id: int) -> Task:
         row = self._conn.execute(
-            "SELECT id, text, due_date, start_date, done FROM tasks WHERE id = ?",
+            "SELECT id, text, due_date, start_date, done, created_at FROM tasks WHERE id = ?",
             (task_id,),
         ).fetchone()
         return _row_to_task(row)

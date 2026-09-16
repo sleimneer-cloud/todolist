@@ -1,14 +1,51 @@
-from PySide6.QtCore import Qt
+from datetime import date, timedelta
+
+from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QDialog, QGraphicsOpacityEffect, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QDialog,
+    QGraphicsOpacityEffect,
+    QMessageBox,
+    QVBoxLayout,
+    QWidget,
+)
 
 from todolist.add_task_dialog import AddTaskDialog
 from todolist.geometry import compute_bottom_right_position
 from todolist.repository import TaskRepository
 from todolist.task_row import TaskRow
 from todolist.ui_main_window import Ui_Dialog
+from todolist.weekly_report import (
+    MissingApiKeyError,
+    WeeklyReportError,
+    generate_weekly_report,
+)
+from todolist.weekly_report_dialog import WeeklyReportDialog
 
 SCREEN_MARGIN = 16
+
+
+class _WeeklyReportWorker(QThread):
+    """Groq 호출은 초 단위로 걸릴 수 있어, UI 스레드에서 직접 하면 그동안
+    창이 멈춘다(마우스도 못 움직임) — QThread로 분리해서 백그라운드에서 돌린다.
+    """
+
+    succeeded = Signal(str)
+    failed = Signal(str)
+
+    def __init__(self, tasks, week_start: date, week_end: date, parent=None):
+        super().__init__(parent)
+        self._tasks = tasks
+        self._week_start = week_start
+        self._week_end = week_end
+
+    def run(self) -> None:
+        try:
+            report = generate_weekly_report(self._tasks, self._week_start, self._week_end)
+        except (MissingApiKeyError, WeeklyReportError) as e:
+            self.failed.emit(str(e))
+        else:
+            self.succeeded.emit(report)
 
 
 class TodoWindow(QDialog):
@@ -39,6 +76,9 @@ class TodoWindow(QDialog):
         self.ui.pin_button.setGraphicsEffect(self._pin_opacity)
         self._pin_opacity.setOpacity(1.0)
         self.ui.pin_button.toggled.connect(self._on_pin_toggled)
+
+        self._report_worker: _WeeklyReportWorker | None = None
+        self.ui.report_button.clicked.connect(self._on_generate_report)
 
         # 행이 자기 위쪽에 구분선을 그리므로 레이아웃은 간격을 두지 않는다.
         self.list_layout = QVBoxLayout(self.ui.scrollAreaWidgetContents)
@@ -86,6 +126,35 @@ class TodoWindow(QDialog):
         self.setAttribute(Qt.WidgetAttribute.WA_MacAlwaysShowToolWindow, pinned)
         self._pin_opacity.setOpacity(1.0 if pinned else 0.35)
         self.show()
+
+    def _on_generate_report(self) -> None:
+        today = date.today()
+        week_start = today - timedelta(days=today.weekday())  # 이번 주 월요일
+        week_end = week_start + timedelta(days=6)  # 이번 주 일요일
+        tasks = self.repository.list_for_week(week_start, week_end)
+        if not tasks:
+            QMessageBox.information(
+                self, "주간 업무일지", "이번 주에 등록된 할 일이 없습니다."
+            )
+            return
+
+        self.ui.report_button.setEnabled(False)
+        self.ui.report_button.setText("⏳")
+        self._report_worker = _WeeklyReportWorker(tasks, week_start, week_end, self)
+        self._report_worker.succeeded.connect(self._on_report_succeeded)
+        self._report_worker.failed.connect(self._on_report_failed)
+        self._report_worker.finished.connect(self._reset_report_button)
+        self._report_worker.start()
+
+    def _on_report_succeeded(self, report: str) -> None:
+        WeeklyReportDialog(report, self).exec()
+
+    def _on_report_failed(self, message: str) -> None:
+        QMessageBox.critical(self, "주간 업무일지 생성 실패", message)
+
+    def _reset_report_button(self) -> None:
+        self.ui.report_button.setEnabled(True)
+        self.ui.report_button.setText("📄")
 
     def _position_bottom_right(self) -> None:
         screen = QGuiApplication.primaryScreen().availableGeometry()

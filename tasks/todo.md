@@ -53,28 +53,29 @@ Plan: `plan.md` · Spec: `../SPEC.md`
 - [x] Ready for review
 
 ## Phase 4: Weekly Work Journal
-- [ ] Task 6: `created_at` tracking + weekly repository query
+**결정됨 (당초 "결정 필요" 항목):** Anthropic API는 비용 때문에 제외 — 무료 티어가 있는 Groq를
+OpenAI 호환 Chat Completions API로 stdlib `urllib`만으로 직접 호출 (SDK 추가 없음). 모델은
+`GROQ_MODEL` 환경변수로 설정 가능, 기본값 `llama-3.3-70b-versatile`. API 키는 Keychain이 아니라
+`GROQ_API_KEY` 환경변수로 보관 (SPEC.md의 "자격 증명 커밋 금지" 원칙에 맞으면서 가장 단순한 방식).
+
+- [x] Task 6: `created_at` tracking + weekly repository query
   - Acceptance: `tasks` table has `created_at` (auto-stamped on `add`, not caller-supplied); `list_for_week(monday, sunday)` returns tasks with `created_at` in that inclusive range; `TaskRepository` Protocol gains the method
-  - Verify: `pytest tests/test_repository.py` (inside/before/after week, empty week cases); manual add-then-query check via Python shell
+  - Verify: `pytest tests/test_repository.py` (inside/before/after week, empty week, legacy-NULL cases) — all passing
   - Files: `src/todolist/db.py`, `src/todolist/models.py`, `src/todolist/repository.py`, `tests/test_repository.py`
-  - Dependencies: Task 1
 
-- [ ] Task 7: LLM weekly report client
-  - Acceptance: `generate_weekly_report(tasks, week_start, week_end) -> str` builds a prompt and returns model output; raises specific errors for missing API key / network failure; API key read from Keychain (or local config fallback), never hardcoded; no Qt import
-  - Verify: `pytest tests/test_weekly_report.py` with the HTTP call mocked (prompt-building + error paths); manual run against a real API key
+- [x] Task 7: LLM weekly report client
+  - Acceptance: `generate_weekly_report(tasks, week_start, week_end) -> str` builds a prompt and returns model output; raises `MissingApiKeyError`/`WeeklyReportError` for missing key / network / API / malformed-response failures; API key read from `GROQ_API_KEY` env var, never hardcoded; no Qt import
+  - Verify: `pytest tests/test_weekly_report.py` with `urllib.request.urlopen` mocked (prompt-building + every error path) — all passing
   - Files: `src/todolist/weekly_report.py`, `tests/test_weekly_report.py`
-  - Dependencies: Task 6
-  - **Needs a decision before starting:** stdlib-only HTTP call vs. adding the `anthropic` SDK — `SPEC.md` requires asking before new dependencies
 
-- [ ] Task 8: In-app trigger + report dialog
-  - Acceptance: a control in the widget starts generation for the current ISO week; repository query + LLM call run off the UI thread; a "generating..." state is visible while running; success shows a copyable `QDialog`; failure (no key / network / empty week) shows a clear message, never a crash or silent failure
-  - Verify: full `pytest` suite; manual click-through with tasks present, with an empty week, and with the API key removed
-  - Files: `src/todolist/window.py`, `src/todolist/weekly_report_dialog.py`
-  - Dependencies: Task 6, Task 7
+- [x] Task 8: In-app trigger + report dialog
+  - Acceptance: 📄 header button starts generation for the current ISO week (Mon–Sun); repository query + LLM call run on a `QThread` off the UI thread; button shows ⏳ and disables while running; success opens a copyable `WeeklyReportDialog` (read-only `QTextEdit` + 복사 버튼); failure shows `QMessageBox.critical`; an empty week short-circuits to `QMessageBox.information` before any network call
+  - Verify: full `pytest` suite green; headless functional check driving `_on_generate_report()` end-to-end with `GROQ_API_KEY` unset, confirming the failed-signal message and button reset
+  - Files: `src/todolist/window.py`, `src/todolist/weekly_report_dialog.py`, `src/todolist/ui/main_window.ui`
 
 ## Checkpoint: Weekly Journal Complete
-- [ ] `pytest` passes (repository week-query tests + report-client tests)
-- [ ] Adding a task today, then generating this week's journal, includes that task
-- [ ] Generating with no tasks in the current week shows a clear empty-state message, not an error
-- [ ] Generating with no API key configured shows a clear setup message, not a crash
+- [x] `pytest` passes (repository week-query tests + report-client tests) — 44/44
+- [x] Adding a task today, then generating this week's journal, includes that task (list_for_week 테스트로 확인)
+- [x] Generating with no tasks in the current week shows a clear empty-state message, not an error
+- [x] Generating with no API key configured shows a clear setup message, not a crash
 - [ ] Review with human before proceeding

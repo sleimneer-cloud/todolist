@@ -46,6 +46,13 @@ class Ui_Dialog(object):
 
         self.header_layout.addItem(self.header_spacer)
 
+        self.report_button = QPushButton(Dialog)
+        self.report_button.setObjectName(u"report_button")
+        self.report_button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.report_button.setFlat(True)
+
+        self.header_layout.addWidget(self.report_button)
+
         self.pin_button = QPushButton(Dialog)
         self.pin_button.setObjectName(u"pin_button")
         self.pin_button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -87,6 +94,10 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"todolist", None))
         self.title_label.setText(QCoreApplication.translate("Dialog", u"\ud560 \uc77c", None))
         self.count_label.setText(QCoreApplication.translate("Dialog", u"0\uac1c", None))
+        self.report_button.setText(QCoreApplication.translate("Dialog", u"\U0001f4c4", None))
+#if QT_CONFIG(tooltip)
+        self.report_button.setToolTip(QCoreApplication.translate("Dialog", u"\uc774\ubc88 \uc8fc \uc5c5\ubb34\uc77c\uc9c0 \uc0dd\uc131", None))
+#endif // QT_CONFIG(tooltip)
         self.pin_button.setText(QCoreApplication.translate("Dialog", u"\U0001f4cc", None))
 #if QT_CONFIG(tooltip)
         self.pin_button.setToolTip(QCoreApplication.translate("Dialog", u"\ud56d\uc0c1 \uc704\uc5d0 \uace0\uc815", None))

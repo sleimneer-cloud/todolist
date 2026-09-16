@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 import pytest
 
@@ -106,3 +106,61 @@ def test_default_db_path_has_no_qt_dependency():
     import sys
 
     assert "PySide6" not in sys.modules
+
+
+def test_add_stamps_created_at_automatically(repo):
+    before = datetime.now()
+    task = repo.add("stamped", due_date=None)
+    after = datetime.now()
+    assert task.created_at is not None
+    assert before <= task.created_at <= after
+
+
+def test_list_for_week_includes_only_tasks_created_in_range(tmp_path):
+    db_path = tmp_path / "todolist.db"
+    LocalSqliteRepository(db_path=db_path)  # creates schema
+    monday = date(2026, 9, 14)
+    sunday = date(2026, 9, 20)
+
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            "INSERT INTO tasks (text, done, created_at) VALUES (?, 0, ?)",
+            ("before week", "2026-09-13T23:59:00"),
+        )
+        conn.execute(
+            "INSERT INTO tasks (text, done, created_at) VALUES (?, 0, ?)",
+            ("monday", "2026-09-14T00:00:00"),
+        )
+        conn.execute(
+            "INSERT INTO tasks (text, done, created_at) VALUES (?, 0, ?)",
+            ("sunday", "2026-09-20T23:00:00"),
+        )
+        conn.execute(
+            "INSERT INTO tasks (text, done, created_at) VALUES (?, 0, ?)",
+            ("after week", "2026-09-21T00:01:00"),
+        )
+
+    reopened = LocalSqliteRepository(db_path=db_path)
+    week_tasks = reopened.list_for_week(monday, sunday)
+    assert [t.text for t in week_tasks] == ["monday", "sunday"]
+
+
+def test_list_for_week_empty_when_no_tasks_in_range(repo):
+    assert repo.list_for_week(date(2020, 1, 6), date(2020, 1, 12)) == []
+
+
+def test_list_for_week_excludes_legacy_rows_with_no_created_at(tmp_path):
+    db_path = tmp_path / "todolist.db"
+    LocalSqliteRepository(db_path=db_path)  # creates schema
+
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            "INSERT INTO tasks (text, due_date, start_date, done) VALUES (?, ?, ?, 0)",
+            ("legacy task", None, None),
+        )
+
+    reopened = LocalSqliteRepository(db_path=db_path)
+    today = date.today()
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=6)
+    assert reopened.list_for_week(week_start, week_end) == []

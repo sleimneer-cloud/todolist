@@ -25,6 +25,22 @@ QWidget {
     color: #e8e8ea;
 }
 
+/* 이름 없는 QPushButton의 기본값. 이게 없으면 macOS 기본 흰 버튼이 어두운
+ * 배경 위에 그대로 나온다(다이얼로그 OK/Cancel에서 실제로 겪은 버그) — 특정
+ * 버튼마다 매번 고치는 대신 여기서 한 번에 막는다. #id 규칙이 더 구체적이라
+ * add_todo_button/pin_button/deleteButton은 이 아래에서도 자기 스타일을 유지한다. */
+QPushButton {
+    color: #e8e8ea;
+    background: #2c2d31;
+    border: 1px solid #46474c;
+    border-radius: 5px;
+    padding: 5px 12px;
+}
+
+QPushButton:hover {
+    border-color: #6e7178;
+}
+
 /* ── 헤더 ───────────────────────────────────────────── */
 
 QLabel#title_label {
@@ -38,7 +54,8 @@ QLabel#count_label {
     color: #6e7178;
 }
 
-QPushButton#pin_button {
+QPushButton#pin_button,
+QPushButton#report_button {
     background: transparent;
     border: none;
     font-size: 13px;
@@ -141,7 +158,8 @@ QPushButton#add_todo_button:pressed {
 
 QLineEdit,
 QDateEdit,
-QDateTimeEdit {
+QDateTimeEdit,
+QTextEdit {
     background: #2c2d31;
     border: 1px solid #46474c;
     border-radius: 5px;
@@ -187,21 +205,12 @@ QScrollBar::sub-page:vertical {
     height: 0px;
 }
 
-/* ── 다이얼로그 버튼 ────────────────────────────────── */
+/* ── 다이얼로그 기본 버튼 강조 ──────────────────────── */
 
-/* 지정하지 않으면 macOS 기본 흰 버튼이 어두운 배경 위에 그대로 나와
- * 글자가 거의 안 보인다. */
+/* 기본 모양은 위 전역 QPushButton 규칙이 이미 처리한다 — 여기선 Enter로
+ * 바로 실행되는 기본 버튼(OK 등)만 파란색으로 강조한다. */
 QDialogButtonBox QPushButton {
-    color: #e8e8ea;
-    background: #2c2d31;
-    border: 1px solid #46474c;
-    border-radius: 5px;
-    padding: 5px 14px;
     min-width: 62px;
-}
-
-QDialogButtonBox QPushButton:hover {
-    border-color: #6e7178;
 }
 
 QDialogButtonBox QPushButton:default {

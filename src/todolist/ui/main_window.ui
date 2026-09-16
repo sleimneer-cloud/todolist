@@ -68,6 +68,22 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="report_button">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="text">
+        <string>📄</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+       <property name="toolTip">
+        <string>이번 주 업무일지 생성</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pin_button">
        <property name="cursor">
         <cursorShape>PointingHandCursor</cursorShape>
