@@ -52,6 +52,13 @@ pytest          # 테스트
 ruff check .    # 린트
 ```
 
+Qt Designer로 `.ui` 수정 후 코드 재생성 (`src/todolist/ui/`가 디자인 소스, `src/todolist/ui_*.py`는 생성물이라 직접 수정 금지):
+
+```bash
+pyside6-uic src/todolist/ui/main_window.ui -o src/todolist/ui_main_window.py
+pyside6-uic src/todolist/ui/add_task_dialog.ui -o src/todolist/ui_add_task_dialog.py
+```
+
 `.app` 재빌드:
 
 ```bash
