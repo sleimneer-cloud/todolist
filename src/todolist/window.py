@@ -118,9 +118,13 @@ class TodoWindow(QDialog):
         self._update_count()
 
     def _on_pin_toggled(self, pinned: bool) -> None:
-        flags = Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool
+        # 실측 결과: macOS에서 Qt.Tool은 WindowStaysOnTopHint와 무관하게
+        # 그 자체로 다른 창들 위에 뜬다 — Tool만 남기고 StaysOnTopHint를
+        # 껐더니 여전히 Finder 창을 덮어버렸다(핀을 꺼도 안 꺼지던 원인).
+        # 진짜로 "일반 창처럼" 만들려면 Tool 자체를 빼야 한다.
+        flags = Qt.WindowType.FramelessWindowHint
         if pinned:
-            flags |= Qt.WindowType.WindowStaysOnTopHint
+            flags |= Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint
         # setWindowFlags()는 실행 중인 창을 숨긴다 — 다시 show()해야 한다.
         self.setWindowFlags(flags)
         self.setAttribute(Qt.WidgetAttribute.WA_MacAlwaysShowToolWindow, pinned)
