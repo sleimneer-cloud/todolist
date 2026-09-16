@@ -64,7 +64,7 @@ export GROQ_API_KEY="여기에_키"
 GROQ_API_KEY "여기에_키"`로 세션 전역에 등록하거나, 터미널에서 소스 실행 방식을 쓴다.
 
 키가 없으면 버튼을 눌러도 네트워크 요청 없이 바로 안내 메시지가 뜬다. 모델은 기본값
-(`llama-3.3-70b-versatile`)을 쓰며, 다른 모델로 바꾸려면 `GROQ_MODEL` 환경변수를 설정한다 — 현재
+(`openai/gpt-oss-120b`)을 쓰며, 다른 모델로 바꾸려면 `GROQ_MODEL` 환경변수를 설정한다 — 현재
 사용 가능한 모델 목록은 [console.groq.com/docs/models](https://console.groq.com/docs/models)에서 확인.
 
 ### 프롬프트 문구 커스터마이즈

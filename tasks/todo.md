@@ -55,7 +55,7 @@ Plan: `plan.md` · Spec: `../SPEC.md`
 ## Phase 4: Weekly Work Journal
 **결정됨 (당초 "결정 필요" 항목):** Anthropic API는 비용 때문에 제외 — 무료 티어가 있는 Groq를
 OpenAI 호환 Chat Completions API로 stdlib `urllib`만으로 직접 호출 (SDK 추가 없음). 모델은
-`GROQ_MODEL` 환경변수로 설정 가능, 기본값 `llama-3.3-70b-versatile`. API 키는 Keychain이 아니라
+`GROQ_MODEL` 환경변수로 설정 가능, 기본값 `openai/gpt-oss-120b`. API 키는 Keychain이 아니라
 `GROQ_API_KEY` 환경변수로 보관 (SPEC.md의 "자격 증명 커밋 금지" 원칙에 맞으면서 가장 단순한 방식).
 
 - [x] Task 6: `created_at` tracking + weekly repository query

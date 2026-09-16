@@ -18,7 +18,7 @@ GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 # Groq는 무료 모델 라인업이 자주 바뀐다 — 최신 목록은
 # https://console.groq.com/docs/models 에서 확인하고, 다른 모델을 쓰려면
 # GROQ_MODEL 환경변수로 덮어쓴다.
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 REQUEST_TIMEOUT_SECONDS = 30
 
 # 프롬프트 문구를 코드가 아니라 텍스트 파일로 보관 — 사용자가 코드를 고치지
