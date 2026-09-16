@@ -26,6 +26,10 @@ class TodoWindow(QDialog):
             | Qt.WindowType.WindowStaysOnTopHint
             | Qt.WindowType.Tool
         )
+        # macOS는 Qt.Tool 창을 앱이 비활성 상태가 되면 자동으로 숨긴다 — 다른
+        # 앱을 클릭하는 순간 위젯이 통째로 사라지는 원인이었다. 이 속성이 그
+        # 숨김을 막아서 정말로 "항상" 떠 있게 한다.
+        self.setAttribute(Qt.WidgetAttribute.WA_MacAlwaysShowToolWindow)
         self.setFixedSize(self.size())
 
         # 행이 자기 위쪽에 구분선을 그리므로 레이아웃은 간격을 두지 않는다.
