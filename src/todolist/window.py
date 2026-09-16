@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QDialog, QGraphicsOpacityEffect, QVBoxLayout, QWidget
 
 from todolist.add_task_dialog import AddTaskDialog
 from todolist.geometry import compute_bottom_right_position
@@ -31,6 +31,14 @@ class TodoWindow(QDialog):
         # 숨김을 막아서 정말로 "항상" 떠 있게 한다.
         self.setAttribute(Qt.WidgetAttribute.WA_MacAlwaysShowToolWindow)
         self.setFixedSize(self.size())
+
+        # 핀 버튼: 꺼두면 일반 창처럼 동작(다른 창에 가려지고 비활성 시 숨음),
+        # 켜두면 지금까지의 always-on-top 동작. .ui에서 기본 checked=True라
+        # 위의 setWindowFlags/setAttribute 초기값과 이미 일치한다.
+        self._pin_opacity = QGraphicsOpacityEffect(self.ui.pin_button)
+        self.ui.pin_button.setGraphicsEffect(self._pin_opacity)
+        self._pin_opacity.setOpacity(1.0)
+        self.ui.pin_button.toggled.connect(self._on_pin_toggled)
 
         # 행이 자기 위쪽에 구분선을 그리므로 레이아웃은 간격을 두지 않는다.
         self.list_layout = QVBoxLayout(self.ui.scrollAreaWidgetContents)
@@ -68,6 +76,16 @@ class TodoWindow(QDialog):
         task = self.repository.add(text, due_date=due_date, start_date=start_date)
         self._add_row(task)
         self._update_count()
+
+    def _on_pin_toggled(self, pinned: bool) -> None:
+        flags = Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool
+        if pinned:
+            flags |= Qt.WindowType.WindowStaysOnTopHint
+        # setWindowFlags()는 실행 중인 창을 숨긴다 — 다시 show()해야 한다.
+        self.setWindowFlags(flags)
+        self.setAttribute(Qt.WidgetAttribute.WA_MacAlwaysShowToolWindow, pinned)
+        self._pin_opacity.setOpacity(1.0 if pinned else 0.35)
+        self.show()
 
     def _position_bottom_right(self) -> None:
         screen = QGuiApplication.primaryScreen().availableGeometry()

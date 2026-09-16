@@ -46,6 +46,15 @@ class Ui_Dialog(object):
 
         self.header_layout.addItem(self.header_spacer)
 
+        self.pin_button = QPushButton(Dialog)
+        self.pin_button.setObjectName(u"pin_button")
+        self.pin_button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.pin_button.setFlat(True)
+        self.pin_button.setCheckable(True)
+        self.pin_button.setChecked(True)
+
+        self.header_layout.addWidget(self.pin_button)
+
 
         self.root_layout.addLayout(self.header_layout)
 
@@ -78,6 +87,10 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"todolist", None))
         self.title_label.setText(QCoreApplication.translate("Dialog", u"\ud560 \uc77c", None))
         self.count_label.setText(QCoreApplication.translate("Dialog", u"0\uac1c", None))
+        self.pin_button.setText(QCoreApplication.translate("Dialog", u"\U0001f4cc", None))
+#if QT_CONFIG(tooltip)
+        self.pin_button.setToolTip(QCoreApplication.translate("Dialog", u"\ud56d\uc0c1 \uc704\uc5d0 \uace0\uc815", None))
+#endif // QT_CONFIG(tooltip)
         self.add_todo_button.setText(QCoreApplication.translate("Dialog", u"\uff0b  \uc77c\uc815 \ucd94\uac00", None))
     # retranslateUi
 
